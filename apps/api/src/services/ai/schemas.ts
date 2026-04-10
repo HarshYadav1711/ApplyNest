@@ -11,3 +11,13 @@ export const parsedJobSchema = z.object({
 });
 
 export type ParsedJob = z.infer<typeof parsedJobSchema>;
+
+/** Strict JSON from the resume-bullets model (validated before any client response). */
+export const resumeBulletsResponseSchema = z.object({
+  bullets: z
+    .array(z.string().min(12).max(600))
+    .min(3)
+    .max(5),
+});
+
+export type ResumeBulletsPayload = z.infer<typeof resumeBulletsResponseSchema>;

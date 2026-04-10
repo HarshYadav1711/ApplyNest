@@ -1,5 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
+import type { ResumeBulletsSource } from "../types/resumeBullets";
 import {
   APPLICATION_STATUSES,
   type ApplicationStatus,
@@ -118,6 +119,14 @@ export function ApplicationModal({
   const [jdPaste, setJdPaste] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
   const [parseError, setParseError] = useState<string | null>(null);
+  const [resumeBullets, setResumeBullets] = useState<string[] | null>(null);
+  const [resumeSource, setResumeSource] = useState<ResumeBulletsSource | null>(
+    null
+  );
+  const [bulletsError, setBulletsError] = useState<string | null>(null);
+  const [copiedBulletIndex, setCopiedBulletIndex] = useState<number | null>(
+    null
+  );
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -125,6 +134,9 @@ export function ApplicationModal({
     mutationFn: (text: string) => aiApi.parseJobDescription(text),
     onSuccess: (parsed) => {
       setParseError(null);
+      setResumeBullets(null);
+      setResumeSource(null);
+      setBulletsError(null);
       setForm((f) => ({
         ...f,
         company: parsed.company || f.company,
@@ -147,6 +159,44 @@ export function ApplicationModal({
       );
     },
   });
+
+  const bulletsMutation = useMutation({
+    mutationFn: () =>
+      aiApi.fetchResumeBullets({
+        jobDescriptionText: jdPaste.trim(),
+        role: form.role.trim(),
+        company: form.company.trim(),
+        requiredSkills: skillsFromText(form.requiredSkillsText),
+        niceToHaveSkills: skillsFromText(form.niceToHaveSkillsText),
+      }),
+    onSuccess: (data) => {
+      setBulletsError(null);
+      setResumeBullets(data.bullets);
+      setResumeSource(data.source);
+    },
+    onError: (err: unknown) => {
+      setBulletsError(
+        getApiErrorMessage(
+          err,
+          "Could not generate resume bullet suggestions."
+        )
+      );
+      setResumeBullets(null);
+      setResumeSource(null);
+    },
+  });
+
+  async function handleCopyBullet(text: string, index: number) {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedBulletIndex(index);
+      window.setTimeout(() => {
+        setCopiedBulletIndex((cur) => (cur === index ? null : cur));
+      }, 2000);
+    } catch {
+      setBulletsError("Could not copy to clipboard.");
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -214,6 +264,7 @@ export function ApplicationModal({
             onChange={(e) => {
               setJdPaste(e.target.value);
               setParseError(null);
+              setBulletsError(null);
             }}
             disabled={saving || deleting || parseMutation.isPending}
           />
@@ -363,6 +414,88 @@ export function ApplicationModal({
             disabled={saving || deleting}
           />
         </div>
+
+        <div className="rounded-lg border border-violet-200 bg-violet-50/60 p-3">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="text-xs font-medium text-slate-800">
+                Resume bullet suggestions
+              </p>
+              <p className="mt-0.5 text-xs text-slate-600">
+                3–5 achievement lines tailored to the pasted JD, role, and
+                skills. Requires at least 20 characters of JD text and a role
+                title.
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="secondary"
+              className="shrink-0"
+              disabled={
+                jdPaste.trim().length < 20 ||
+                !form.role.trim() ||
+                bulletsMutation.isPending ||
+                saving ||
+                deleting ||
+                parseMutation.isPending
+              }
+              onClick={() => bulletsMutation.mutate()}
+            >
+              {bulletsMutation.isPending ? (
+                <span className="flex items-center gap-2">
+                  <Spinner className="size-4 border-t-violet-800" />
+                  Generating…
+                </span>
+              ) : (
+                "Suggest bullets"
+              )}
+            </Button>
+          </div>
+          {resumeSource === "fallback" && resumeBullets && resumeBullets.length > 0 ? (
+            <p className="mt-2 text-xs text-amber-800" role="status">
+              Using deterministic templates (no{" "}
+              <code className="rounded bg-white/80 px-1">OPENAI_API_KEY</code>{" "}
+              on the server). Add a key for AI-authored bullets grounded in the
+              posting.
+            </p>
+          ) : null}
+          {bulletsError ? (
+            <p className="mt-2 text-xs font-medium text-red-700" role="alert">
+              {bulletsError}
+            </p>
+          ) : null}
+          {resumeBullets && resumeBullets.length > 0 ? (
+            <ul className="mt-3 space-y-2">
+              {resumeBullets.map((bullet, i) => (
+                <li
+                  key={i}
+                  className="flex gap-2 rounded-md border border-violet-100 bg-white/90 p-2.5 shadow-sm"
+                >
+                  <p className="min-w-0 flex-1 text-sm leading-snug text-slate-800">
+                    {bullet}
+                  </p>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="h-8 shrink-0 px-2 py-1 text-xs"
+                    aria-label={`Copy resume bullet ${i + 1}`}
+                    disabled={saving || deleting}
+                    onClick={() => void handleCopyBullet(bullet, i)}
+                  >
+                    {copiedBulletIndex === i ? "Copied" : "Copy"}
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          ) : !bulletsMutation.isPending && !bulletsError ? (
+            <p className="mt-2 text-xs text-slate-500">
+              Suggestions appear here after you run{" "}
+              <span className="font-medium text-slate-700">Suggest bullets</span>
+              .
+            </p>
+          ) : null}
+        </div>
+
         <div>
           <label
             className="text-xs font-medium text-slate-600"
