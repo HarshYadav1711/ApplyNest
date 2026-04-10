@@ -2,5 +2,10 @@ node_modules/
 dist/
 .env
 .env.local
+.env.*.local
 *.log
 .DS_Store
+
+# Workspace build outputs
+apps/*/dist/
+apps/web/node_modules/.tmp/
