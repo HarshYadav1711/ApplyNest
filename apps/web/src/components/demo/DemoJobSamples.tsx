@@ -11,11 +11,11 @@ export function DemoJobSamples({
   onPick: (text: string) => void;
 }) {
   return (
-    <div className="border-t border-slate-100 pt-8">
+    <div className="border-t border-slate-200/70 pt-9">
       <p className="text-xs font-medium text-slate-500">
         Try with sample job descriptions
       </p>
-      <div className="mt-3 flex flex-wrap justify-center gap-2">
+      <div className="mt-3.5 flex flex-wrap justify-center gap-2">
         <Button
           type="button"
           variant="secondary"
@@ -41,7 +41,7 @@ export function DemoJobSamples({
           Edge-case JD
         </Button>
       </div>
-      <p className="mt-2 text-[11px] leading-snug text-slate-400">
+      <p className="mt-3 text-[11px] leading-relaxed text-slate-400">
         Opens a new application with the sample text in the paste field — use{" "}
         <span className="font-medium text-slate-500">Parse</span> to try AI.
       </p>

@@ -53,7 +53,7 @@ export function KanbanCard({
         isDragging && "opacity-60"
       )}
     >
-      <div className="flex gap-2 rounded-lg border border-slate-200 bg-white p-2.5 shadow-sm ring-1 ring-slate-900/5">
+      <div className="flex gap-2.5 rounded-lg border border-slate-200/90 bg-white p-3 shadow-sm ring-1 ring-slate-900/[0.04] transition-shadow duration-150 hover:border-slate-300/80 hover:shadow-md">
         <button
           type="button"
           className="mt-0.5 cursor-grab rounded px-0.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 active:cursor-grabbing"

@@ -254,8 +254,8 @@ export function ApplicationModal({
 
   return (
     <Modal open={true} title={title} onClose={onClose}>
-      <form className="space-y-5" onSubmit={handleSubmit}>
-        <div className="rounded-lg border border-slate-200 bg-slate-50/80 p-3">
+      <form className="space-y-6" onSubmit={handleSubmit}>
+        <div className="rounded-xl border border-slate-200/90 bg-slate-50/90 p-4 shadow-sm ring-1 ring-slate-900/[0.03]">
           <label
             className="block text-xs font-medium text-slate-600"
             htmlFor="jd-paste"
@@ -264,7 +264,7 @@ export function ApplicationModal({
           </label>
           <Textarea
             id="jd-paste"
-            className="mt-1 font-mono text-xs"
+            className="mt-1.5 font-mono text-xs"
             rows={5}
             value={jdPaste}
             placeholder="Paste the posting text (at least 20 characters), then parse to fill fields below."
@@ -275,7 +275,7 @@ export function ApplicationModal({
             }}
             disabled={saving || deleting || parseMutation.isPending}
           />
-          <div className="mt-2 flex flex-wrap items-center gap-2">
+          <div className="mt-3 flex flex-wrap items-center gap-2">
             <Button
               type="button"
               variant="secondary"
@@ -302,7 +302,7 @@ export function ApplicationModal({
               {parseError}
             </Alert>
           ) : null}
-          <p className="mt-2 text-xs text-slate-500">
+          <p className="mt-3 text-xs leading-relaxed text-slate-500">
             Uses AI when an API key is configured; otherwise a local fallback
             extracts what it can.
           </p>
@@ -318,7 +318,7 @@ export function ApplicationModal({
           <Input
             id="app-company"
             required
-            className="mt-1"
+            className="mt-1.5"
             value={form.company}
             onChange={(e) =>
               setForm((f) => ({ ...f, company: e.target.value }))
@@ -334,13 +334,13 @@ export function ApplicationModal({
           <Input
             id="app-role"
             required
-            className="mt-1"
+            className="mt-1.5"
             value={form.role}
             onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))}
             disabled={saving || deleting}
           />
         </div>
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label
               className="text-xs font-medium text-slate-600"
@@ -350,7 +350,7 @@ export function ApplicationModal({
             </label>
             <Input
               id="app-location"
-              className="mt-1"
+              className="mt-1.5"
               value={form.location}
               onChange={(e) =>
                 setForm((f) => ({ ...f, location: e.target.value }))
@@ -367,7 +367,7 @@ export function ApplicationModal({
             </label>
             <Input
               id="app-seniority"
-              className="mt-1"
+              className="mt-1.5"
               placeholder="e.g. Senior"
               value={form.seniority}
               onChange={(e) =>
@@ -386,7 +386,7 @@ export function ApplicationModal({
           </label>
           <Textarea
             id="app-required-skills"
-            className="mt-1 text-sm"
+            className="mt-1.5 text-sm"
             rows={2}
             placeholder="Comma or line separated"
             value={form.requiredSkillsText}
@@ -408,7 +408,7 @@ export function ApplicationModal({
           </label>
           <Textarea
             id="app-nice-skills"
-            className="mt-1 text-sm"
+            className="mt-1.5 text-sm"
             rows={2}
             placeholder="Comma or line separated"
             value={form.niceToHaveSkillsText}
@@ -422,7 +422,7 @@ export function ApplicationModal({
           />
         </div>
 
-        <div className="rounded-lg border border-violet-200 bg-violet-50/60 p-3">
+        <div className="rounded-xl border border-violet-200/90 bg-violet-50/50 p-4 shadow-sm ring-1 ring-violet-900/[0.04]">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <p className="text-xs font-medium text-slate-800">
@@ -515,7 +515,7 @@ export function ApplicationModal({
             type="url"
             inputMode="url"
             placeholder="https://"
-            className="mt-1"
+            className="mt-1.5"
             value={form.jdLink}
             onChange={(e) =>
               setForm((f) => ({ ...f, jdLink: e.target.value }))
@@ -523,7 +523,7 @@ export function ApplicationModal({
             disabled={saving || deleting}
           />
         </div>
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label
               className="text-xs font-medium text-slate-600"
@@ -535,7 +535,7 @@ export function ApplicationModal({
               id="app-date"
               type="date"
               required
-              className="mt-1"
+              className="mt-1.5"
               value={form.dateApplied}
               onChange={(e) =>
                 setForm((f) => ({ ...f, dateApplied: e.target.value }))
@@ -552,7 +552,7 @@ export function ApplicationModal({
             </label>
             <Select
               id="app-status"
-              className="mt-1"
+              className="mt-1.5"
               value={form.status}
               onChange={(e) =>
                 setForm((f) => ({
@@ -580,7 +580,7 @@ export function ApplicationModal({
           </label>
           <Input
             id="app-salary"
-            className="mt-1"
+            className="mt-1.5"
             placeholder="e.g. $120k – $150k"
             value={form.salaryRange}
             onChange={(e) =>
@@ -595,7 +595,7 @@ export function ApplicationModal({
           </label>
           <Textarea
             id="app-notes"
-            className="mt-1"
+            className="mt-1.5"
             rows={4}
             value={form.notes}
             onChange={(e) =>
@@ -607,7 +607,7 @@ export function ApplicationModal({
 
         {formError ? <Alert variant="danger">{formError}</Alert> : null}
 
-        <div className="flex flex-wrap gap-2 border-t border-slate-100 pt-5">
+        <div className="flex flex-wrap gap-2 border-t border-slate-100 pt-6">
           <Button type="submit" disabled={saving || deleting}>
             {saving ? "Saving…" : mode === "create" ? "Create" : "Save changes"}
           </Button>

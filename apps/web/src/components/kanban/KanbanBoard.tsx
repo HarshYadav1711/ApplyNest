@@ -102,7 +102,7 @@ export function KanbanBoard({
       onDragCancel={handleDragCancel}
     >
       <div
-        className="flex gap-3 overflow-x-auto pb-2"
+        className="flex gap-4 overflow-x-auto pb-3 pt-0.5"
         role="region"
         aria-label="Application pipeline"
       >

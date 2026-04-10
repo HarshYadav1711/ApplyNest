@@ -27,7 +27,7 @@ export function Modal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <button
         type="button"
-        className="absolute inset-0 bg-slate-900/40"
+        className="absolute inset-0 bg-slate-900/45"
         aria-label="Close dialog"
         onClick={onClose}
       />
@@ -35,9 +35,9 @@ export function Modal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="application-modal-title"
-        className="relative z-10 max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl bg-white p-6 shadow-xl ring-1 ring-slate-900/5"
+        className="relative z-10 max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-7 shadow-[0_20px_50px_-12px_rgba(15,23,42,0.18)] ring-1 ring-slate-900/[0.06]"
       >
-        <div className="mb-5 flex items-start justify-between gap-4 border-b border-slate-100 pb-4">
+        <div className="mb-6 flex items-start justify-between gap-4 border-b border-slate-100/90 pb-5">
           <h2
             id="application-modal-title"
             className="text-lg font-semibold tracking-tight text-slate-900"

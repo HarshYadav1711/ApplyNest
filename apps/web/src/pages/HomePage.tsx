@@ -84,22 +84,22 @@ export function HomePage() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="border-b border-slate-200/90 bg-white shadow-sm shadow-slate-900/5">
-        <div className="mx-auto max-w-[1600px] px-4 py-5 sm:px-6">
-          <div className="flex flex-wrap items-start justify-between gap-4">
+    <div className="min-h-screen bg-slate-50/95">
+      <header className="border-b border-slate-200/80 bg-white shadow-sm shadow-slate-900/[0.04]">
+        <div className="mx-auto max-w-[1600px] px-4 py-6 sm:px-8">
+          <div className="flex flex-wrap items-start justify-between gap-5">
             <div className="min-w-0">
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                 ApplyNest
               </p>
-              <h1 className="mt-1 text-lg font-semibold tracking-tight text-slate-900">
+              <h1 className="mt-1.5 text-base font-semibold tracking-tight text-slate-900">
                 Application pipeline
               </h1>
-              <p className="mt-0.5 truncate text-sm text-slate-600">
+              <p className="mt-1 truncate text-sm text-slate-600">
                 {user?.email}
               </p>
             </div>
-            <div className="flex flex-shrink-0 flex-wrap items-center gap-2">
+            <div className="flex flex-shrink-0 flex-wrap items-center gap-2.5">
               <Button type="button" variant="primary" onClick={openCreate}>
                 Add application
               </Button>
@@ -110,7 +110,7 @@ export function HomePage() {
           </div>
 
           {applications.length > 0 ? (
-            <div className="mt-5 flex flex-col gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:items-end">
+            <div className="mt-6 flex flex-col gap-3.5 border-t border-slate-100 pt-6 sm:flex-row sm:items-end">
               <div className="min-w-0 flex-1">
                 <label
                   className="sr-only"
@@ -149,7 +149,7 @@ export function HomePage() {
                 </Select>
               </div>
               {hasActiveFilters ? (
-                <p className="text-xs text-slate-500 sm:pb-2">
+                <p className="text-xs font-medium text-slate-500 sm:pb-2">
                   Showing {filteredApplications.length} of {applications.length}
                 </p>
               ) : null}
@@ -158,7 +158,7 @@ export function HomePage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-[1600px] px-4 py-8 sm:px-6">
+      <main className="mx-auto max-w-[1600px] px-4 py-10 sm:px-8">
         {appsQuery.isLoading ? (
           <PageLoading message="Loading your applications…" />
         ) : appsQuery.isError ? (
@@ -190,7 +190,7 @@ export function HomePage() {
               }}
               onOpenCard={openEdit}
             />
-            <p className="mt-6 text-center text-xs leading-relaxed text-slate-500">
+            <p className="mx-auto mt-8 max-w-2xl text-center text-xs leading-relaxed text-slate-500">
               Drag a card by the handle to change its stage. Click a card to view
               or edit. Updates save automatically.
             </p>

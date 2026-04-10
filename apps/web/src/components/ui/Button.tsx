@@ -4,11 +4,12 @@ import { cn } from "../../utils/cn";
 type Variant = "primary" | "secondary" | "danger" | "ghost";
 
 const styles: Record<Variant, string> = {
-  primary: "bg-slate-900 text-white shadow-sm hover:bg-slate-800",
+  primary:
+    "bg-slate-900 text-white shadow-sm hover:bg-slate-800 hover:shadow-md",
   secondary:
-    "border border-slate-200 bg-white text-slate-800 hover:bg-slate-50",
-  danger: "bg-red-600 text-white shadow-sm hover:bg-red-700",
-  ghost: "text-slate-700 hover:bg-slate-100",
+    "border border-slate-200/90 bg-white text-slate-800 shadow-sm hover:border-slate-300 hover:bg-slate-50/95 hover:shadow",
+  danger: "bg-red-600 text-white shadow-sm hover:bg-red-700 hover:shadow-md",
+  ghost: "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
 };
 
 const focus: Record<Variant, string> = {
@@ -36,7 +37,7 @@ export function Button({
     <button
       type={type}
       className={cn(
-        "inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium transition",
+        "inline-flex items-center justify-center rounded-lg px-3.5 py-2 text-sm font-medium transition-colors transition-shadow duration-150",
         "disabled:pointer-events-none disabled:opacity-45",
         styles[variant],
         focus[variant],

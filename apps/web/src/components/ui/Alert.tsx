@@ -21,7 +21,7 @@ export function Alert({
   role?: "alert" | "status";
 }) {
   const classNameMerged = cn(
-    "rounded-lg border px-3 py-2.5 text-sm leading-snug",
+    "rounded-lg border px-3 py-2.5 text-sm leading-snug shadow-sm",
     styles[variant],
     className
   );
