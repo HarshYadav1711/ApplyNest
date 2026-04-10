@@ -12,9 +12,11 @@ import {
   isoToDateInputValue,
   todayDateInputValue,
 } from "../utils/dateFormat";
+import { Alert } from "./ui/Alert";
 import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
 import { Modal } from "./ui/Modal";
+import { Select } from "./ui/Select";
 import { Spinner } from "./ui/Spinner";
 import { Textarea } from "./ui/Textarea";
 
@@ -247,7 +249,7 @@ export function ApplicationModal({
 
   return (
     <Modal open={true} title={title} onClose={onClose}>
-      <form className="space-y-4" onSubmit={handleSubmit}>
+      <form className="space-y-5" onSubmit={handleSubmit}>
         <div className="rounded-lg border border-slate-200 bg-slate-50/80 p-3">
           <label
             className="block text-xs font-medium text-slate-600"
@@ -289,12 +291,12 @@ export function ApplicationModal({
                 "Parse"
               )}
             </Button>
-            {parseError ? (
-              <span className="text-xs text-red-600" role="alert">
-                {parseError}
-              </span>
-            ) : null}
           </div>
+          {parseError ? (
+            <Alert variant="danger" className="mt-2 text-xs">
+              {parseError}
+            </Alert>
+          ) : null}
           <p className="mt-2 text-xs text-slate-500">
             Uses AI when an API key is configured; otherwise a local fallback
             extracts what it can.
@@ -452,17 +454,17 @@ export function ApplicationModal({
             </Button>
           </div>
           {resumeSource === "fallback" && resumeBullets && resumeBullets.length > 0 ? (
-            <p className="mt-2 text-xs text-amber-800" role="status">
+            <Alert variant="warning" className="mt-2 text-xs" role="status">
               Using deterministic templates (no{" "}
               <code className="rounded bg-white/80 px-1">OPENAI_API_KEY</code>{" "}
               on the server). Add a key for AI-authored bullets grounded in the
               posting.
-            </p>
+            </Alert>
           ) : null}
           {bulletsError ? (
-            <p className="mt-2 text-xs font-medium text-red-700" role="alert">
+            <Alert variant="danger" className="mt-2 text-xs">
               {bulletsError}
-            </p>
+            </Alert>
           ) : null}
           {resumeBullets && resumeBullets.length > 0 ? (
             <ul className="mt-3 space-y-2">
@@ -543,9 +545,9 @@ export function ApplicationModal({
             >
               Status
             </label>
-            <select
+            <Select
               id="app-status"
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-900/10"
+              className="mt-1"
               value={form.status}
               onChange={(e) =>
                 setForm((f) => ({
@@ -560,7 +562,7 @@ export function ApplicationModal({
                   {s}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
         </div>
         <div>
@@ -598,13 +600,9 @@ export function ApplicationModal({
           />
         </div>
 
-        {formError ? (
-          <p className="text-sm text-red-600" role="alert">
-            {formError}
-          </p>
-        ) : null}
+        {formError ? <Alert variant="danger">{formError}</Alert> : null}
 
-        <div className="flex flex-wrap gap-2 border-t border-slate-100 pt-4">
+        <div className="flex flex-wrap gap-2 border-t border-slate-100 pt-5">
           <Button type="submit" disabled={saving || deleting}>
             {saving ? "Saving…" : mode === "create" ? "Create" : "Save changes"}
           </Button>

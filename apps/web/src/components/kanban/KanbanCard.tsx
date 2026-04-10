@@ -44,19 +44,15 @@ export function KanbanCard({
           <button
             type="button"
             className="w-full text-left"
+            title={`${application.company} — ${application.role}`}
             onClick={() => onOpen(application)}
           >
             <p className="truncate font-medium text-slate-900">
               {application.company}
             </p>
             <p className="truncate text-sm text-slate-600">{application.role}</p>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1.5 text-xs text-slate-500">
               Applied {formatAppliedDate(application.dateApplied)}
-            </p>
-            <p className="mt-1.5">
-              <span className="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-800">
-                {application.status}
-              </span>
             </p>
           </button>
         </div>

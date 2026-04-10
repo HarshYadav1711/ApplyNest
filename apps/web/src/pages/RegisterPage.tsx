@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { AuthPageLayout } from "../components/layout/AuthPageLayout";
+import { Alert } from "../components/ui/Alert";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
-import { Spinner } from "../components/ui/Spinner";
+import { PageLoading } from "../components/ui/PageStatus";
 import { getApiErrorMessage } from "../utils/apiError";
 
 export function RegisterPage() {
@@ -33,80 +35,68 @@ export function RegisterPage() {
   }
 
   if (isBootstrapping) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-slate-50 text-slate-600">
-        <Spinner />
-        <p className="text-sm">Checking your session…</p>
-      </div>
-    );
+    return <PageLoading message="Checking your session…" className="min-h-screen" />;
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-4">
-      <div className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
-        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-          ApplyNest
-        </p>
-        <h1 className="mt-1 text-xl font-semibold text-slate-900">
-          Create account
-        </h1>
-        <p className="mt-1 text-sm text-slate-600">
-          Password must be at least 8 characters.
-        </p>
-        <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
-          <div>
-            <label
-              className="text-xs font-medium text-slate-600"
-              htmlFor="register-email"
-            >
-              Email
-            </label>
-            <Input
-              id="register-email"
-              type="email"
-              autoComplete="email"
-              required
-              className="mt-1"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={pending}
-            />
-          </div>
-          <div>
-            <label
-              className="text-xs font-medium text-slate-600"
-              htmlFor="register-password"
-            >
-              Password
-            </label>
-            <Input
-              id="register-password"
-              type="password"
-              autoComplete="new-password"
-              required
-              minLength={8}
-              className="mt-1"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={pending}
-            />
-          </div>
-          {error ? (
-            <p className="text-sm text-red-600" role="alert">
-              {error}
-            </p>
-          ) : null}
-          <Button type="submit" className="w-full" disabled={pending}>
-            {pending ? "Creating account…" : "Create account"}
-          </Button>
-        </form>
-        <p className="mt-4 text-center text-sm text-slate-600">
+    <AuthPageLayout
+      title="Create account"
+      description="Choose an email and a password of at least eight characters."
+      footer={
+        <p className="mt-6 text-center text-sm text-slate-600">
           Already have an account?{" "}
-          <Link className="font-medium text-slate-900 underline" to="/login">
+          <Link
+            className="font-medium text-slate-900 underline decoration-slate-400 underline-offset-2 hover:decoration-slate-900"
+            to="/login"
+          >
             Sign in
           </Link>
         </p>
-      </div>
-    </div>
+      }
+    >
+      <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
+        <div>
+          <label
+            className="text-xs font-medium text-slate-600"
+            htmlFor="register-email"
+          >
+            Email
+          </label>
+          <Input
+            id="register-email"
+            type="email"
+            autoComplete="email"
+            required
+            className="mt-1.5"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={pending}
+          />
+        </div>
+        <div>
+          <label
+            className="text-xs font-medium text-slate-600"
+            htmlFor="register-password"
+          >
+            Password
+          </label>
+          <Input
+            id="register-password"
+            type="password"
+            autoComplete="new-password"
+            required
+            minLength={8}
+            className="mt-1.5"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            disabled={pending}
+          />
+        </div>
+        {error ? <Alert variant="danger">{error}</Alert> : null}
+        <Button type="submit" className="w-full" disabled={pending}>
+          {pending ? "Creating account…" : "Create account"}
+        </Button>
+      </form>
+    </AuthPageLayout>
   );
 }

@@ -37,11 +37,19 @@ export function Modal({
         aria-labelledby="application-modal-title"
         className="relative z-10 max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl bg-white p-6 shadow-xl ring-1 ring-slate-900/5"
       >
-        <div className="mb-4 flex items-start justify-between gap-4">
-          <h2 id="application-modal-title" className="text-lg font-semibold text-slate-900">
+        <div className="mb-5 flex items-start justify-between gap-4 border-b border-slate-100 pb-4">
+          <h2
+            id="application-modal-title"
+            className="text-lg font-semibold tracking-tight text-slate-900"
+          >
             {title}
           </h2>
-          <Button variant="ghost" className="shrink-0 px-2 py-1" type="button" onClick={onClose}>
+          <Button
+            variant="ghost"
+            className="-mr-1 shrink-0 px-2 py-1 text-slate-600"
+            type="button"
+            onClick={onClose}
+          >
             Close
           </Button>
         </div>

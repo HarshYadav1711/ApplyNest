@@ -1,15 +1,28 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { ApplicationModal } from "../components/ApplicationModal";
 import { KanbanBoard } from "../components/kanban/KanbanBoard";
 import { Button } from "../components/ui/Button";
-import { Spinner } from "../components/ui/Spinner";
+import { Input } from "../components/ui/Input";
+import {
+  EmptyStatePanel,
+  FilterEmptyPanel,
+  PageLoading,
+  QueryErrorPanel,
+} from "../components/ui/PageStatus";
+import { Select } from "../components/ui/Select";
 import {
   useApplicationMutations,
   useApplicationsList,
 } from "../hooks/useApplications";
 import type { Application } from "../types/application";
 import type { ApplicationStatus } from "../constants/applicationStatus";
+import { APPLICATION_STATUSES } from "../constants/applicationStatus";
+import { getApiErrorMessage } from "../utils/apiError";
+import {
+  filterApplications,
+  type StatusFilter,
+} from "../utils/filterApplications";
 
 export function HomePage() {
   const { user, logout, isAuthenticated } = useAuth();
@@ -21,7 +34,24 @@ export function HomePage() {
   const [modalMode, setModalMode] = useState<"create" | "edit">("create");
   const [selected, setSelected] = useState<Application | null>(null);
 
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+
   const applications = appsQuery.data ?? [];
+
+  const filteredApplications = useMemo(
+    () =>
+      filterApplications(appsQuery.data ?? [], search, statusFilter),
+    [appsQuery.data, search, statusFilter]
+  );
+
+  const hasActiveFilters =
+    search.trim() !== "" || statusFilter !== "all";
+
+  function clearFilters() {
+    setSearch("");
+    setStatusFilter("all");
+  }
 
   function openCreate() {
     setModalKey((k) => k + 1);
@@ -37,89 +67,120 @@ export function HomePage() {
     setModalOpen(true);
   }
 
+  const listErrorMessage = getApiErrorMessage(
+    appsQuery.error,
+    "Something went wrong while loading your applications."
+  );
+
   return (
     <div className="min-h-screen bg-slate-50">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-4 px-4 py-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-              ApplyNest
-            </p>
-            <p className="text-sm text-slate-600">{user?.email}</p>
+      <header className="border-b border-slate-200/90 bg-white shadow-sm shadow-slate-900/5">
+        <div className="mx-auto max-w-[1600px] px-4 py-5 sm:px-6">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                ApplyNest
+              </p>
+              <h1 className="mt-1 text-lg font-semibold tracking-tight text-slate-900">
+                Application pipeline
+              </h1>
+              <p className="mt-0.5 truncate text-sm text-slate-600">
+                {user?.email}
+              </p>
+            </div>
+            <div className="flex flex-shrink-0 flex-wrap items-center gap-2">
+              <Button type="button" variant="primary" onClick={openCreate}>
+                Add application
+              </Button>
+              <Button type="button" variant="secondary" onClick={logout}>
+                Sign out
+              </Button>
+            </div>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Button type="button" variant="primary" onClick={openCreate}>
-              Add application
-            </Button>
-            <Button type="button" variant="secondary" onClick={logout}>
-              Sign out
-            </Button>
-          </div>
+
+          {applications.length > 0 ? (
+            <div className="mt-5 flex flex-col gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:items-end">
+              <div className="min-w-0 flex-1">
+                <label
+                  className="sr-only"
+                  htmlFor="pipeline-search"
+                >
+                  Search applications
+                </label>
+                <Input
+                  id="pipeline-search"
+                  type="search"
+                  autoComplete="off"
+                  placeholder="Search by company, role, or location"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full sm:max-w-md"
+                />
+              </div>
+              <div className="w-full sm:w-52">
+                <label className="sr-only" htmlFor="pipeline-stage">
+                  Filter by stage
+                </label>
+                <Select
+                  id="pipeline-stage"
+                  value={statusFilter}
+                  onChange={(e) =>
+                    setStatusFilter(e.target.value as StatusFilter)
+                  }
+                  aria-label="Filter by stage"
+                >
+                  <option value="all">All stages</option>
+                  {APPLICATION_STATUSES.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+              {hasActiveFilters ? (
+                <p className="text-xs text-slate-500 sm:pb-2">
+                  Showing {filteredApplications.length} of {applications.length}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
         </div>
       </header>
 
-      <main className="mx-auto max-w-[1600px] px-4 py-8">
+      <main className="mx-auto max-w-[1600px] px-4 py-8 sm:px-6">
         {appsQuery.isLoading ? (
-          <div
-            className="flex flex-col items-center justify-center gap-3 py-20 text-slate-600"
-            role="status"
-            aria-live="polite"
-          >
-            <Spinner />
-            <p className="text-sm">Loading applications…</p>
-          </div>
+          <PageLoading message="Loading your applications…" />
         ) : appsQuery.isError ? (
-          <div
-            className="rounded-xl border border-red-200 bg-red-50 p-6 text-center"
-            role="alert"
-          >
-            <p className="font-medium text-red-800">
-              Could not load applications
-            </p>
-            <p className="mt-1 text-sm text-red-700">
-              {appsQuery.error instanceof Error
-                ? appsQuery.error.message
-                : "Something went wrong."}
-            </p>
-            <Button
-              type="button"
-              variant="secondary"
-              className="mt-4"
-              onClick={() => void appsQuery.refetch()}
-            >
-              Retry
-            </Button>
-          </div>
+          <QueryErrorPanel
+            title="Could not load applications"
+            message={listErrorMessage}
+            onRetry={() => void appsQuery.refetch()}
+            retryLabel="Retry"
+          />
         ) : applications.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-slate-300 bg-white p-12 text-center shadow-sm">
-            <h2 className="text-lg font-semibold text-slate-900">
-              No applications yet
-            </h2>
-            <p className="mx-auto mt-2 max-w-md text-sm text-slate-600">
-              Track every role in one place. Add your first application to get
-              started.
-            </p>
-            <Button
-              type="button"
-              className="mt-6"
-              variant="primary"
-              onClick={openCreate}
-            >
-              Add application
-            </Button>
-          </div>
+          <EmptyStatePanel
+            title="No applications yet"
+            description="Track every role in one place. Add your first application to build your pipeline."
+            action={
+              <Button type="button" variant="primary" onClick={openCreate}>
+                Add application
+              </Button>
+            }
+          />
+        ) : applications.length > 0 && filteredApplications.length === 0 ? (
+          <FilterEmptyPanel onClear={clearFilters} />
         ) : (
           <div>
             <KanbanBoard
-              applications={applications}
+              applications={filteredApplications}
               onStatusChange={(id, status: ApplicationStatus) => {
                 moveToStatus.mutate({ id, status });
               }}
               onOpenCard={openEdit}
             />
-            <p className="mt-4 text-center text-xs text-slate-500">
-              Drag a card by the handle to change stage. Click the card to edit
-              details. Changes save immediately.
+            <p className="mt-6 text-center text-xs leading-relaxed text-slate-500">
+              Drag a card by the handle to change its stage. Click a card to view
+              or edit. Updates save automatically.
             </p>
           </div>
         )}
