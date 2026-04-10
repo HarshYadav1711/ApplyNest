@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { ApplicationModal } from "../components/ApplicationModal";
 import { KanbanBoard } from "../components/kanban/KanbanBoard";
@@ -20,8 +20,10 @@ import { getApiErrorMessage } from "../utils/apiError";
 import { downloadApplicationsCsv } from "../utils/exportToCsv";
 import { DemoJobSamples } from "../components/demo/DemoJobSamples";
 import { ApplicationStatsRow } from "../components/ApplicationStatsRow";
+import { OverdueNotifyPrompt } from "../components/OverdueNotifyPrompt";
 import { getApplicationStats } from "../utils/getApplicationStats";
-import { countOverdueFollowUps } from "../utils/followUpReminder";
+
+const EMPTY_APPLICATIONS: Application[] = [];
 
 export function HomePage() {
   const { user, logout, isAuthenticated } = useAuth();
@@ -36,45 +38,9 @@ export function HomePage() {
 
   const [boardSearch, setBoardSearch] = useState("");
 
-  const applications = appsQuery.data ?? [];
-  const overdueFollowUpNotifiedRef = useRef(false);
-
-  useEffect(() => {
-    if (!isAuthenticated || appsQuery.isLoading || appsQuery.isError) return;
-    if (overdueFollowUpNotifiedRef.current) return;
-    const overdue = countOverdueFollowUps(appsQuery.data ?? []);
-    if (overdue === 0) return;
-    if (typeof Notification === "undefined") {
-      overdueFollowUpNotifiedRef.current = true;
-      return;
-    }
-    const body =
-      overdue === 1
-        ? "You have 1 overdue follow-up."
-        : `You have ${overdue} overdue follow-ups.`;
-    const notify = () => {
-      try {
-        new Notification("ApplyNest", {
-          body,
-          tag: "applynest-followup-overdue",
-        });
-      } catch {
-        /* ignore */
-      }
-    };
-    const perm = Notification.permission;
-    if (perm === "granted") {
-      notify();
-      overdueFollowUpNotifiedRef.current = true;
-    } else if (perm === "default") {
-      void Notification.requestPermission().then((p) => {
-        if (p === "granted") notify();
-        overdueFollowUpNotifiedRef.current = true;
-      });
-    } else {
-      overdueFollowUpNotifiedRef.current = true;
-    }
-  }, [isAuthenticated, appsQuery.isLoading, appsQuery.isError, appsQuery.data]);
+  const applications = appsQuery.data ?? EMPTY_APPLICATIONS;
+  const boardReady =
+    isAuthenticated && !appsQuery.isLoading && !appsQuery.isError;
 
   const stats = useMemo(
     () => getApplicationStats(appsQuery.data ?? []),
@@ -182,6 +148,10 @@ export function HomePage() {
           />
         ) : (
           <div>
+            <OverdueNotifyPrompt
+              whenReady={boardReady}
+              applications={applications}
+            />
             <div className="mb-5 flex max-w-md flex-col gap-1.5">
               <label
                 className="text-xs font-medium text-slate-600"

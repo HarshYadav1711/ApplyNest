@@ -31,3 +31,28 @@ export function countOverdueFollowUps(
   }
   return n;
 }
+
+const OVERDUE_NOTIFY_SESSION_KEY = "applynest.overdueNotifyOnce";
+
+/** Whether we already showed or declined the overdue notification flow this tab session. */
+export function isOverdueNotifyHandledThisSession(): boolean {
+  try {
+    return sessionStorage.getItem(OVERDUE_NOTIFY_SESSION_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+export function markOverdueNotifyHandledThisSession(): void {
+  try {
+    sessionStorage.setItem(OVERDUE_NOTIFY_SESSION_KEY, "1");
+  } catch {
+    /* quota / private mode */
+  }
+}
+
+/** Shown in the browser notification and inline prompt. */
+export function overdueFollowUpNotificationBody(count: number): string {
+  if (count === 1) return "You have 1 overdue follow-up.";
+  return `You have ${count} overdue follow-ups.`;
+}

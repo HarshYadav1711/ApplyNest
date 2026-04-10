@@ -171,6 +171,15 @@ Do not commit real `.env` files. This repo ships **`.env.example`** only. `.giti
 - Email verification and password reset.
 - Observability: structured logs, metrics, tracing for API deploys.
 
+### Additional Features
+
+- Search and filter applications by company and role  
+- Export application data as CSV  
+- Lightweight dashboard showing application distribution across stages  
+- Set follow-up dates for applications  
+- Visual indicators for overdue and due-today items  
+- Optional browser notification for pending follow-ups  
+
 ---
 
 ## License
