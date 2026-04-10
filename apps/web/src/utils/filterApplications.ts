@@ -1,33 +1,19 @@
-import type { ApplicationStatus } from "../constants/applicationStatus";
 import type { Application } from "../types/application";
 
-export type StatusFilter = ApplicationStatus | "all";
-
 /**
- * Client-side filter for company, role, location substring search and optional stage.
+ * Client-side filter: company or role substring, case-insensitive.
+ * Returns a new array; does not mutate `applications`.
  */
-export function filterApplications(
+export function filterApplicationsBySearch(
   applications: Application[],
-  searchRaw: string,
-  status: StatusFilter
+  searchRaw: string
 ): Application[] {
   const q = searchRaw.trim().toLowerCase();
-  let out = applications;
-
-  if (q) {
-    out = out.filter((a) => {
-      const loc = (a.location ?? "").toLowerCase();
-      return (
-        a.company.toLowerCase().includes(q) ||
-        a.role.toLowerCase().includes(q) ||
-        loc.includes(q)
-      );
-    });
+  if (!q) {
+    return applications.slice();
   }
-
-  if (status !== "all") {
-    out = out.filter((a) => a.status === status);
-  }
-
-  return out;
+  return applications.filter(
+    (a) =>
+      a.company.toLowerCase().includes(q) || a.role.toLowerCase().includes(q)
+  );
 }

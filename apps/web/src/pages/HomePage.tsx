@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { ApplicationModal } from "../components/ApplicationModal";
 import { KanbanBoard } from "../components/kanban/KanbanBoard";
@@ -6,23 +6,17 @@ import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import {
   EmptyStatePanel,
-  FilterEmptyPanel,
   PageLoading,
   QueryErrorPanel,
 } from "../components/ui/PageStatus";
-import { Select } from "../components/ui/Select";
+import { useFilteredApplications } from "../hooks/useFilteredApplications";
 import {
   useApplicationMutations,
   useApplicationsList,
 } from "../hooks/useApplications";
 import type { Application } from "../types/application";
 import type { ApplicationStatus } from "../constants/applicationStatus";
-import { APPLICATION_STATUSES } from "../constants/applicationStatus";
 import { getApiErrorMessage } from "../utils/apiError";
-import {
-  filterApplications,
-  type StatusFilter,
-} from "../utils/filterApplications";
 import { DemoJobSamples } from "../components/demo/DemoJobSamples";
 
 export function HomePage() {
@@ -36,24 +30,19 @@ export function HomePage() {
   const [selected, setSelected] = useState<Application | null>(null);
   const [createJdPreset, setCreateJdPreset] = useState("");
 
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [boardSearch, setBoardSearch] = useState("");
 
   const applications = appsQuery.data ?? [];
 
-  const filteredApplications = useMemo(
-    () =>
-      filterApplications(appsQuery.data ?? [], search, statusFilter),
-    [appsQuery.data, search, statusFilter]
+  const { filteredApplications, debouncedSearch } = useFilteredApplications(
+    applications,
+    boardSearch
   );
 
-  const hasActiveFilters =
-    search.trim() !== "" || statusFilter !== "all";
-
-  function clearFilters() {
-    setSearch("");
-    setStatusFilter("all");
-  }
+  const hasNoSearchMatches =
+    applications.length > 0 &&
+    filteredApplications.length === 0 &&
+    debouncedSearch.length > 0;
 
   function openCreate() {
     setCreateJdPreset("");
@@ -108,53 +97,6 @@ export function HomePage() {
               </Button>
             </div>
           </div>
-
-          {applications.length > 0 ? (
-            <div className="mt-6 flex flex-col gap-3.5 border-t border-slate-100 pt-6 sm:flex-row sm:items-end">
-              <div className="min-w-0 flex-1">
-                <label
-                  className="sr-only"
-                  htmlFor="pipeline-search"
-                >
-                  Search applications
-                </label>
-                <Input
-                  id="pipeline-search"
-                  type="search"
-                  autoComplete="off"
-                  placeholder="Search by company, role, or location"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="w-full sm:max-w-md"
-                />
-              </div>
-              <div className="w-full sm:w-52">
-                <label className="sr-only" htmlFor="pipeline-stage">
-                  Filter by stage
-                </label>
-                <Select
-                  id="pipeline-stage"
-                  value={statusFilter}
-                  onChange={(e) =>
-                    setStatusFilter(e.target.value as StatusFilter)
-                  }
-                  aria-label="Filter by stage"
-                >
-                  <option value="all">All stages</option>
-                  {APPLICATION_STATUSES.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
-                </Select>
-              </div>
-              {hasActiveFilters ? (
-                <p className="text-xs font-medium text-slate-500 sm:pb-2">
-                  Showing {filteredApplications.length} of {applications.length}
-                </p>
-              ) : null}
-            </div>
-          ) : null}
         </div>
       </header>
 
@@ -179,21 +121,54 @@ export function HomePage() {
             }
             footer={<DemoJobSamples onPick={openCreateWithDemoJd} />}
           />
-        ) : applications.length > 0 && filteredApplications.length === 0 ? (
-          <FilterEmptyPanel onClear={clearFilters} />
         ) : (
           <div>
-            <KanbanBoard
-              applications={filteredApplications}
-              onStatusChange={(id, status: ApplicationStatus) => {
-                moveToStatus.mutate({ id, status });
-              }}
-              onOpenCard={openEdit}
-            />
-            <p className="mx-auto mt-8 max-w-2xl text-center text-xs leading-relaxed text-slate-500">
-              Drag a card by the handle to change its stage. Click a card to view
-              or edit. Updates save automatically.
-            </p>
+            <div className="mb-5 flex max-w-md flex-col gap-1.5">
+              <label
+                className="text-xs font-medium text-slate-600"
+                htmlFor="board-search"
+              >
+                Search
+              </label>
+              <Input
+                id="board-search"
+                type="search"
+                autoComplete="off"
+                placeholder="Filter by company or role"
+                value={boardSearch}
+                onChange={(e) => setBoardSearch(e.target.value)}
+                aria-describedby="board-search-hint"
+              />
+              <p id="board-search-hint" className="text-xs text-slate-500">
+                Matches company and role; updates shortly after you stop typing.
+              </p>
+            </div>
+
+            {hasNoSearchMatches ? (
+              <div
+                className="rounded-xl border border-dashed border-slate-200/90 bg-slate-50/60 py-14 text-center"
+                role="status"
+              >
+                <p className="text-sm text-slate-600">No results found.</p>
+                <p className="mt-1 text-xs text-slate-500">
+                  Try another term or clear the search.
+                </p>
+              </div>
+            ) : (
+              <>
+                <KanbanBoard
+                  applications={filteredApplications}
+                  onStatusChange={(id, status: ApplicationStatus) => {
+                    moveToStatus.mutate({ id, status });
+                  }}
+                  onOpenCard={openEdit}
+                />
+                <p className="mx-auto mt-8 max-w-2xl text-center text-xs leading-relaxed text-slate-500">
+                  Drag a card by the handle to change its stage. Click a card to
+                  view or edit. Updates save automatically.
+                </p>
+              </>
+            )}
           </div>
         )}
       </main>
