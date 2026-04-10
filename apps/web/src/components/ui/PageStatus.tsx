@@ -68,10 +68,13 @@ export function EmptyStatePanel({
   title,
   description,
   action,
+  footer,
 }: {
   title: string;
   description: string;
   action?: ReactNode;
+  /** Optional secondary block (e.g. demo samples) — kept visually separate from the primary CTA. */
+  footer?: ReactNode;
 }) {
   return (
     <div className="mx-auto max-w-lg rounded-2xl border border-dashed border-slate-300/90 bg-white px-8 py-14 text-center shadow-sm">
@@ -82,6 +85,7 @@ export function EmptyStatePanel({
         {description}
       </p>
       {action ? <div className="mt-8 flex justify-center">{action}</div> : null}
+      {footer ? <div className="mx-auto max-w-md">{footer}</div> : null}
     </div>
   );
 }

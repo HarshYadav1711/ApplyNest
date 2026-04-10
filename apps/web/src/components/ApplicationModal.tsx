@@ -100,6 +100,7 @@ function toPayload(values: ApplicationFormValues) {
 export function ApplicationModal({
   mode,
   initial,
+  initialJdPaste = "",
   onClose,
   onCreate,
   onUpdate,
@@ -107,6 +108,8 @@ export function ApplicationModal({
 }: {
   mode: "create" | "edit";
   initial: Application | null;
+  /** Pre-fills the JD paste area when creating (e.g. demo samples). */
+  initialJdPaste?: string;
   onClose: () => void;
   onCreate: (payload: ReturnType<typeof toPayload>) => Promise<void>;
   onUpdate: (
@@ -118,7 +121,9 @@ export function ApplicationModal({
   const [form, setForm] = useState<ApplicationFormValues>(() =>
     mode === "edit" && initial ? fromApplication(initial) : emptyForm()
   );
-  const [jdPaste, setJdPaste] = useState("");
+  const [jdPaste, setJdPaste] = useState(
+    () => (mode === "create" ? initialJdPaste : "") ?? ""
+  );
   const [formError, setFormError] = useState<string | null>(null);
   const [parseError, setParseError] = useState<string | null>(null);
   const [resumeBullets, setResumeBullets] = useState<string[] | null>(null);

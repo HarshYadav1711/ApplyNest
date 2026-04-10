@@ -23,6 +23,7 @@ import {
   filterApplications,
   type StatusFilter,
 } from "../utils/filterApplications";
+import { DemoJobSamples } from "../components/demo/DemoJobSamples";
 
 export function HomePage() {
   const { user, logout, isAuthenticated } = useAuth();
@@ -33,6 +34,7 @@ export function HomePage() {
   const [modalKey, setModalKey] = useState(0);
   const [modalMode, setModalMode] = useState<"create" | "edit">("create");
   const [selected, setSelected] = useState<Application | null>(null);
+  const [createJdPreset, setCreateJdPreset] = useState("");
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
@@ -54,6 +56,15 @@ export function HomePage() {
   }
 
   function openCreate() {
+    setCreateJdPreset("");
+    setModalKey((k) => k + 1);
+    setModalMode("create");
+    setSelected(null);
+    setModalOpen(true);
+  }
+
+  function openCreateWithDemoJd(text: string) {
+    setCreateJdPreset(text);
     setModalKey((k) => k + 1);
     setModalMode("create");
     setSelected(null);
@@ -166,6 +177,7 @@ export function HomePage() {
                 Add application
               </Button>
             }
+            footer={<DemoJobSamples onPick={openCreateWithDemoJd} />}
           />
         ) : applications.length > 0 && filteredApplications.length === 0 ? (
           <FilterEmptyPanel onClear={clearFilters} />
@@ -191,6 +203,9 @@ export function HomePage() {
           key={modalKey}
           mode={modalMode}
           initial={selected}
+          initialJdPaste={
+            modalMode === "create" ? createJdPreset : undefined
+          }
           onClose={() => setModalOpen(false)}
           onCreate={async (payload) => {
             await create.mutateAsync(payload);
