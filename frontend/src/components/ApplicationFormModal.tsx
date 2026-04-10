@@ -274,8 +274,14 @@ export function ApplicationFormModal({
         </div>
 
         <div>
-          <label className="text-xs font-medium text-slate-600">Pipeline stage</label>
+          <label
+            className="text-xs font-medium text-slate-600"
+            htmlFor="application-pipeline-stage"
+          >
+            Pipeline stage
+          </label>
           <select
+            id="application-pipeline-stage"
             className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-slate-400 focus:ring-2"
             value={form.status}
             onChange={(e) =>
