@@ -22,6 +22,8 @@ export interface ApplicationPayload {
   jdLink: string;
   notes: string;
   dateApplied: string;
+  /** ISO string or `null` to clear. */
+  followUpDate: string | null;
   status: ApplicationStatus;
   salaryRange: string;
   location: string;

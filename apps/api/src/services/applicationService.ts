@@ -16,6 +16,7 @@ function toPublic(app: {
   jdLink: string;
   notes: string;
   dateApplied: Date;
+  followUpDate?: Date | null;
   status: ApplicationStatus;
   salaryRange: string;
   location?: string;
@@ -32,6 +33,8 @@ function toPublic(app: {
     jdLink: app.jdLink,
     notes: app.notes,
     dateApplied: app.dateApplied.toISOString(),
+    followUpDate:
+      app.followUpDate != null ? app.followUpDate.toISOString() : null,
     status: app.status,
     salaryRange: app.salaryRange,
     location: app.location ?? "",
@@ -86,6 +89,8 @@ export async function createApplication(
     jdLink: body.jdLink ?? "",
     notes: body.notes ?? "",
     dateApplied: body.dateApplied,
+    followUpDate:
+      body.followUpDate === undefined ? undefined : body.followUpDate,
     status: body.status ?? "Applied",
     salaryRange: body.salaryRange ?? "",
     location: body.location ?? "",

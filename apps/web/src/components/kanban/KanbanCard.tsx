@@ -4,6 +4,7 @@ import { useCallback, useLayoutEffect, useRef } from "react";
 import type { Application } from "../../types/application";
 import { cn } from "../../utils/cn";
 import { formatAppliedDate } from "../../utils/dateFormat";
+import { getFollowUpBadgeState } from "../../utils/followUpReminder";
 
 const KANBAN_DND_VAR = "--kanban-dnd-transform";
 
@@ -21,6 +22,8 @@ export function KanbanCard({
     });
 
   const rootRef = useRef<HTMLDivElement | null>(null);
+
+  const followUp = getFollowUpBadgeState(application.followUpDate);
 
   const setRefs = useCallback(
     (node: HTMLDivElement | null) => {
@@ -72,9 +75,24 @@ export function KanbanCard({
             title={`${application.company} — ${application.role}`}
             onClick={() => onOpen(application)}
           >
-            <p className="truncate font-medium text-slate-900">
-              {application.company}
-            </p>
+            <div className="flex items-start justify-between gap-2">
+              <p className="truncate font-medium text-slate-900">
+                {application.company}
+              </p>
+              {followUp ? (
+                <span
+                  className={cn(
+                    "shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium leading-tight",
+                    followUp === "overdue" &&
+                      "border border-red-200/90 bg-red-50 text-red-800",
+                    followUp === "dueToday" &&
+                      "border border-amber-200/90 bg-amber-50 text-amber-900"
+                  )}
+                >
+                  {followUp === "overdue" ? "🔴 Overdue" : "🟡 Due today"}
+                </span>
+              ) : null}
+            </div>
             <p className="truncate text-sm text-slate-600">{application.role}</p>
             <p className="mt-1.5 text-xs text-slate-500">
               Applied {formatAppliedDate(application.dateApplied)}

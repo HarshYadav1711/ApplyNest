@@ -26,6 +26,7 @@ export interface ApplicationFormValues {
   jdLink: string;
   notes: string;
   dateApplied: string;
+  followUpDate: string;
   status: ApplicationStatus;
   salaryRange: string;
   location: string;
@@ -53,6 +54,7 @@ function emptyForm(): ApplicationFormValues {
     jdLink: "",
     notes: "",
     dateApplied: todayDateInputValue(),
+    followUpDate: "",
     status: "Applied",
     salaryRange: "",
     location: "",
@@ -69,6 +71,9 @@ function fromApplication(app: Application): ApplicationFormValues {
     jdLink: app.jdLink,
     notes: app.notes,
     dateApplied: isoToDateInputValue(app.dateApplied),
+    followUpDate: app.followUpDate
+      ? isoToDateInputValue(app.followUpDate)
+      : "",
     status: app.status,
     salaryRange: app.salaryRange,
     location: app.location ?? "",
@@ -82,12 +87,16 @@ function toPayload(values: ApplicationFormValues) {
   const dateApplied = new Date(
     values.dateApplied + "T12:00:00"
   ).toISOString();
+  const followUpDate = values.followUpDate.trim()
+    ? new Date(values.followUpDate + "T12:00:00").toISOString()
+    : null;
   return {
     company: values.company.trim(),
     role: values.role.trim(),
     jdLink: values.jdLink.trim(),
     notes: values.notes,
     dateApplied,
+    followUpDate,
     status: values.status,
     salaryRange: values.salaryRange.trim(),
     location: values.location.trim(),
@@ -569,6 +578,28 @@ export function ApplicationModal({
               ))}
             </Select>
           </div>
+        </div>
+        <div>
+          <label
+            className="text-xs font-medium text-slate-600"
+            htmlFor="app-follow-up"
+          >
+            Follow-up{" "}
+            <span className="font-normal text-slate-400">(optional)</span>
+          </label>
+          <Input
+            id="app-follow-up"
+            type="date"
+            className="mt-1.5"
+            value={form.followUpDate}
+            onChange={(e) =>
+              setForm((f) => ({ ...f, followUpDate: e.target.value }))
+            }
+            disabled={saving || deleting}
+          />
+          <p className="mt-1 text-xs text-slate-500">
+            Reminder date — the card shows when it&apos;s due today or overdue.
+          </p>
         </div>
         <div>
           <label

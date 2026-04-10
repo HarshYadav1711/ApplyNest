@@ -11,6 +11,7 @@ export interface ApplicationDocument extends mongoose.Document {
   jdLink: string;
   notes: string;
   dateApplied: Date;
+  followUpDate?: Date | null;
   status: ApplicationStatus;
   salaryRange: string;
   location: string;
@@ -34,6 +35,7 @@ const applicationSchema = new Schema<ApplicationDocument>(
     jdLink: { type: String, default: "", trim: true },
     notes: { type: String, default: "" },
     dateApplied: { type: Date, required: true },
+    followUpDate: { type: Date, default: undefined },
     status: {
       type: String,
       required: true,

@@ -18,12 +18,17 @@ const salaryRangeField = z.string().max(200).optional().default("");
 
 const skillsArray = z.array(z.string().max(150)).max(50).optional().default([]);
 
+const followUpDateField = z
+  .union([z.coerce.date(), z.null()])
+  .optional();
+
 export const createApplicationBodySchema = z.object({
   company: z.string().min(1).max(200).trim(),
   role: z.string().min(1).max(200).trim(),
   jdLink: jdLinkField,
   notes: z.string().max(10000).optional().default(""),
   dateApplied: z.coerce.date(),
+  followUpDate: followUpDateField,
   status: statusEnum.optional(),
   salaryRange: salaryRangeField,
   location: z.string().max(300).optional().default(""),
@@ -46,6 +51,7 @@ export const updateApplicationBodySchema = z
       ),
     notes: z.string().max(10000).optional(),
     dateApplied: z.coerce.date().optional(),
+    followUpDate: followUpDateField,
     status: statusEnum.optional(),
     salaryRange: z.string().max(200).optional(),
     location: z.string().max(300).optional(),

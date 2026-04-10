@@ -7,6 +7,8 @@ export interface Application {
   jdLink: string;
   notes: string;
   dateApplied: string;
+  /** Optional reminder date (ISO). Omitted or `null` when not set. */
+  followUpDate?: string | null;
   status: ApplicationStatus;
   salaryRange: string;
   location: string;
