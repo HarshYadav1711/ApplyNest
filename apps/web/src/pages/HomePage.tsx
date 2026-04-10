@@ -1,16 +1,20 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { ApplicationModal } from "../components/ApplicationModal";
+import { KanbanBoard } from "../components/kanban/KanbanBoard";
 import { Button } from "../components/ui/Button";
 import { Spinner } from "../components/ui/Spinner";
-import { useApplicationMutations, useApplicationsList } from "../hooks/useApplications";
+import {
+  useApplicationMutations,
+  useApplicationsList,
+} from "../hooks/useApplications";
 import type { Application } from "../types/application";
-import { formatAppliedDate } from "../utils/dateFormat";
+import type { ApplicationStatus } from "../constants/applicationStatus";
 
 export function HomePage() {
   const { user, logout, isAuthenticated } = useAuth();
   const appsQuery = useApplicationsList(isAuthenticated);
-  const { create, update, remove } = useApplicationMutations();
+  const { create, update, moveToStatus, remove } = useApplicationMutations();
 
   const [modalOpen, setModalOpen] = useState(false);
   const [modalKey, setModalKey] = useState(0);
@@ -36,7 +40,7 @@ export function HomePage() {
   return (
     <div className="min-h-screen bg-slate-50">
       <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-4 py-4">
+        <div className="mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-4 px-4 py-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
               ApplyNest
@@ -54,7 +58,7 @@ export function HomePage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-4 py-8">
+      <main className="mx-auto max-w-[1600px] px-4 py-8">
         {appsQuery.isLoading ? (
           <div
             className="flex flex-col items-center justify-center gap-3 py-20 text-slate-600"
@@ -105,61 +109,17 @@ export function HomePage() {
             </Button>
           </div>
         ) : (
-          <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[640px] text-left text-sm">
-                <thead className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-600">
-                  <tr>
-                    <th className="px-4 py-3">Company</th>
-                    <th className="px-4 py-3">Role</th>
-                    <th className="px-4 py-3">Applied</th>
-                    <th className="px-4 py-3">Status</th>
-                    <th className="px-4 py-3">JD link</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {applications.map((app) => (
-                    <tr
-                      key={app.id}
-                      className="cursor-pointer hover:bg-slate-50"
-                      onClick={() => openEdit(app)}
-                    >
-                      <td className="px-4 py-3 font-medium text-slate-900">
-                        {app.company}
-                      </td>
-                      <td className="max-w-[200px] truncate px-4 py-3 text-slate-700">
-                        {app.role}
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-slate-600">
-                        {formatAppliedDate(app.dateApplied)}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-800">
-                          {app.status}
-                        </span>
-                      </td>
-                      <td className="max-w-[180px] px-4 py-3">
-                        {app.jdLink ? (
-                          <a
-                            href={app.jdLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="truncate text-slate-700 underline"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            Open posting
-                          </a>
-                        ) : (
-                          <span className="text-slate-400">—</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <p className="border-t border-slate-100 px-4 py-2 text-center text-xs text-slate-500">
-              Click a row to view or edit
+          <div>
+            <KanbanBoard
+              applications={applications}
+              onStatusChange={(id, status: ApplicationStatus) => {
+                moveToStatus.mutate({ id, status });
+              }}
+              onOpenCard={openEdit}
+            />
+            <p className="mt-4 text-center text-xs text-slate-500">
+              Drag a card by the handle to change stage. Click the card to edit
+              details. Changes save immediately.
             </p>
           </div>
         )}

@@ -6,7 +6,7 @@ Monorepo for the ApplyNest product: a **Vite + React + TypeScript** web app and 
 
 | Path | Role |
 |------|------|
-| `apps/web` | SPA — `components`, `pages`, `hooks`, `api`, `utils` |
+| `apps/web` | SPA — `components` (incl. `kanban/`), `pages`, `hooks`, `api`, `utils` |
 | `apps/api` | HTTP API — `controllers`, `routes`, `services`, `models`, `middleware`, `validators`, `utils` |
 
 ## Prerequisites
@@ -58,7 +58,7 @@ Each record belongs to the signed-in user: **company**, **role**, **JD link** (`
 | `PATCH` | `/api/applications/:id` | Bearer |
 | `DELETE` | `/api/applications/:id` | Bearer |
 
-**Web**: Home lists applications in a table; **Add application** or a row opens a **modal** to create or edit; delete uses a browser confirm then `DELETE`.
+**Web**: Home shows a **five-column Kanban** (Applied → Rejected); drag cards by the handle to update `status` (optimistic PATCH). **Add application** or a card opens the **modal** to create or edit; delete uses a confirm then `DELETE`.
 
 ## Conventions (TBD)
 

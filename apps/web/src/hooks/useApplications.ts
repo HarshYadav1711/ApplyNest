@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as applicationsApi from "../api/applications";
 import type { ApplicationPayload } from "../api/applications";
+import type { Application } from "../types/application";
+import type { ApplicationStatus } from "../constants/applicationStatus";
 
 export const APPLICATIONS_QUERY_KEY = ["applications", "list"] as const;
 
@@ -36,6 +38,36 @@ export function useApplicationMutations() {
     },
   });
 
+  /** Kanban: move card to a column — optimistic cache + PATCH `status`. */
+  const moveToStatus = useMutation({
+    mutationFn: ({
+      id,
+      status,
+    }: {
+      id: string;
+      status: ApplicationStatus;
+    }) => applicationsApi.updateApplication(id, { status }),
+    onMutate: async ({ id, status }) => {
+      await qc.cancelQueries({ queryKey: APPLICATIONS_QUERY_KEY });
+      const prev = qc.getQueryData<Application[]>(APPLICATIONS_QUERY_KEY);
+      if (prev) {
+        qc.setQueryData<Application[]>(
+          APPLICATIONS_QUERY_KEY,
+          prev.map((a) => (a.id === id ? { ...a, status } : a))
+        );
+      }
+      return { prev };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.prev) {
+        qc.setQueryData(APPLICATIONS_QUERY_KEY, ctx.prev);
+      }
+    },
+    onSettled: () => {
+      void qc.invalidateQueries({ queryKey: APPLICATIONS_QUERY_KEY });
+    },
+  });
+
   const remove = useMutation({
     mutationFn: (id: string) => applicationsApi.deleteApplication(id),
     onSuccess: () => {
@@ -43,5 +75,5 @@ export function useApplicationMutations() {
     },
   });
 
-  return { create, update, remove };
+  return { create, update, moveToStatus, remove };
 }
