@@ -46,6 +46,20 @@ See [.env.example](.env.example). Required for the API: `MONGODB_URI`, `JWT_SECR
 - **API**: `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/auth/me` (Bearer JWT). Passwords hashed with bcrypt; tokens signed with `JWT_SECRET`.
 - **Web**: JWT in `localStorage`, `AuthProvider` + `useAuth()` bootstrap session via `/me` after refresh. `ProtectedRoute` guards `/`. Logout clears token and query cache.
 
+## Applications (CRUD)
+
+Each record belongs to the signed-in user: **company**, **role**, **JD link** (`jdLink`), **notes**, **date applied**, **status** (Applied → Rejected pipeline), optional **salary range**.
+
+| Method | Path | Auth |
+|--------|------|------|
+| `GET` | `/api/applications` | Bearer |
+| `GET` | `/api/applications/:id` | Bearer |
+| `POST` | `/api/applications` | Bearer |
+| `PATCH` | `/api/applications/:id` | Bearer |
+| `DELETE` | `/api/applications/:id` | Bearer |
+
+**Web**: Home lists applications in a table; **Add application** or a row opens a **modal** to create or edit; delete uses a browser confirm then `DELETE`.
+
 ## Conventions (TBD)
 
 _Document API versioning and deployment targets here as the project grows._

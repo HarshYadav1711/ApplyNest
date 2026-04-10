@@ -1,12 +1,15 @@
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 
-type Variant = "primary" | "secondary";
+type Variant = "primary" | "secondary" | "danger" | "ghost";
 
 const styles: Record<Variant, string> = {
   primary:
     "bg-slate-900 text-white hover:bg-slate-800 disabled:opacity-50 shadow-sm",
   secondary:
     "bg-white text-slate-800 border border-slate-200 hover:bg-slate-50 disabled:opacity-50",
+  danger:
+    "bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 shadow-sm",
+  ghost: "text-slate-700 hover:bg-slate-100 disabled:opacity-50",
 };
 
 export function Button({
