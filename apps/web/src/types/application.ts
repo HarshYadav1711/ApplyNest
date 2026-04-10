@@ -9,6 +9,10 @@ export interface Application {
   dateApplied: string;
   status: ApplicationStatus;
   salaryRange: string;
+  location: string;
+  seniority: string;
+  requiredSkills: string[];
+  niceToHaveSkills: string[];
   createdAt: string;
   updatedAt: string;
 }

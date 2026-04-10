@@ -1,8 +1,10 @@
+import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import {
   APPLICATION_STATUSES,
   type ApplicationStatus,
 } from "../constants/applicationStatus";
+import * as aiApi from "../api/ai";
 import type { Application } from "../types/application";
 import { getApiErrorMessage } from "../utils/apiError";
 import {
@@ -12,6 +14,7 @@ import {
 import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
 import { Modal } from "./ui/Modal";
+import { Spinner } from "./ui/Spinner";
 import { Textarea } from "./ui/Textarea";
 
 export interface ApplicationFormValues {
@@ -22,6 +25,22 @@ export interface ApplicationFormValues {
   dateApplied: string;
   status: ApplicationStatus;
   salaryRange: string;
+  location: string;
+  seniority: string;
+  requiredSkillsText: string;
+  niceToHaveSkillsText: string;
+}
+
+function skillsFromText(text: string): string[] {
+  return text
+    .split(/[,;\n]+/)
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .slice(0, 50);
+}
+
+function skillsToText(skills: string[]): string {
+  return skills.join(", ");
 }
 
 function emptyForm(): ApplicationFormValues {
@@ -33,6 +52,10 @@ function emptyForm(): ApplicationFormValues {
     dateApplied: todayDateInputValue(),
     status: "Applied",
     salaryRange: "",
+    location: "",
+    seniority: "",
+    requiredSkillsText: "",
+    niceToHaveSkillsText: "",
   };
 }
 
@@ -45,18 +68,14 @@ function fromApplication(app: Application): ApplicationFormValues {
     dateApplied: isoToDateInputValue(app.dateApplied),
     status: app.status,
     salaryRange: app.salaryRange,
+    location: app.location ?? "",
+    seniority: app.seniority ?? "",
+    requiredSkillsText: skillsToText(app.requiredSkills ?? []),
+    niceToHaveSkillsText: skillsToText(app.niceToHaveSkills ?? []),
   };
 }
 
-function toPayload(values: ApplicationFormValues): {
-  company: string;
-  role: string;
-  jdLink: string;
-  notes: string;
-  dateApplied: string;
-  status: ApplicationStatus;
-  salaryRange: string;
-} {
+function toPayload(values: ApplicationFormValues) {
   const dateApplied = new Date(
     values.dateApplied + "T12:00:00"
   ).toISOString();
@@ -68,6 +87,10 @@ function toPayload(values: ApplicationFormValues): {
     dateApplied,
     status: values.status,
     salaryRange: values.salaryRange.trim(),
+    location: values.location.trim(),
+    seniority: values.seniority.trim(),
+    requiredSkills: skillsFromText(values.requiredSkillsText),
+    niceToHaveSkills: skillsFromText(values.niceToHaveSkillsText),
   };
 }
 
@@ -92,12 +115,38 @@ export function ApplicationModal({
   const [form, setForm] = useState<ApplicationFormValues>(() =>
     mode === "edit" && initial ? fromApplication(initial) : emptyForm()
   );
+  const [jdPaste, setJdPaste] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
+  const [parseError, setParseError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  // Sync when parent remounts with new key — initial state set in useState initializer only.
-  // Parent must change `key` when opening a different application.
+  const parseMutation = useMutation({
+    mutationFn: (text: string) => aiApi.parseJobDescription(text),
+    onSuccess: (parsed) => {
+      setParseError(null);
+      setForm((f) => ({
+        ...f,
+        company: parsed.company || f.company,
+        role: parsed.role || f.role,
+        location: parsed.location || f.location,
+        seniority: parsed.seniority || f.seniority,
+        requiredSkillsText:
+          parsed.requiredSkills.length > 0
+            ? skillsToText(parsed.requiredSkills)
+            : f.requiredSkillsText,
+        niceToHaveSkillsText:
+          parsed.niceToHaveSkills.length > 0
+            ? skillsToText(parsed.niceToHaveSkills)
+            : f.niceToHaveSkillsText,
+      }));
+    },
+    onError: (err: unknown) => {
+      setParseError(
+        getApiErrorMessage(err, "Could not parse job description.")
+      );
+    },
+  });
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -149,6 +198,58 @@ export function ApplicationModal({
   return (
     <Modal open={true} title={title} onClose={onClose}>
       <form className="space-y-4" onSubmit={handleSubmit}>
+        <div className="rounded-lg border border-slate-200 bg-slate-50/80 p-3">
+          <label
+            className="block text-xs font-medium text-slate-600"
+            htmlFor="jd-paste"
+          >
+            Paste job description
+          </label>
+          <Textarea
+            id="jd-paste"
+            className="mt-1 font-mono text-xs"
+            rows={5}
+            value={jdPaste}
+            placeholder="Paste the posting text (at least 20 characters), then parse to fill fields below."
+            onChange={(e) => {
+              setJdPaste(e.target.value);
+              setParseError(null);
+            }}
+            disabled={saving || deleting || parseMutation.isPending}
+          />
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={
+                jdPaste.trim().length < 20 ||
+                parseMutation.isPending ||
+                saving ||
+                deleting
+              }
+              onClick={() => parseMutation.mutate(jdPaste)}
+            >
+              {parseMutation.isPending ? (
+                <span className="flex items-center gap-2">
+                  <Spinner className="size-4 border-t-slate-700" />
+                  Parsing…
+                </span>
+              ) : (
+                "Parse"
+              )}
+            </Button>
+            {parseError ? (
+              <span className="text-xs text-red-600" role="alert">
+                {parseError}
+              </span>
+            ) : null}
+          </div>
+          <p className="mt-2 text-xs text-slate-500">
+            Uses AI when an API key is configured; otherwise a local fallback
+            extracts what it can.
+          </p>
+        </div>
+
         <div>
           <label
             className="text-xs font-medium text-slate-600"
@@ -178,6 +279,87 @@ export function ApplicationModal({
             className="mt-1"
             value={form.role}
             onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))}
+            disabled={saving || deleting}
+          />
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div>
+            <label
+              className="text-xs font-medium text-slate-600"
+              htmlFor="app-location"
+            >
+              Location
+            </label>
+            <Input
+              id="app-location"
+              className="mt-1"
+              value={form.location}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, location: e.target.value }))
+              }
+              disabled={saving || deleting}
+            />
+          </div>
+          <div>
+            <label
+              className="text-xs font-medium text-slate-600"
+              htmlFor="app-seniority"
+            >
+              Seniority
+            </label>
+            <Input
+              id="app-seniority"
+              className="mt-1"
+              placeholder="e.g. Senior"
+              value={form.seniority}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, seniority: e.target.value }))
+              }
+              disabled={saving || deleting}
+            />
+          </div>
+        </div>
+        <div>
+          <label
+            className="text-xs font-medium text-slate-600"
+            htmlFor="app-required-skills"
+          >
+            Required skills
+          </label>
+          <Textarea
+            id="app-required-skills"
+            className="mt-1 text-sm"
+            rows={2}
+            placeholder="Comma or line separated"
+            value={form.requiredSkillsText}
+            onChange={(e) =>
+              setForm((f) => ({
+                ...f,
+                requiredSkillsText: e.target.value,
+              }))
+            }
+            disabled={saving || deleting}
+          />
+        </div>
+        <div>
+          <label
+            className="text-xs font-medium text-slate-600"
+            htmlFor="app-nice-skills"
+          >
+            Nice-to-have skills
+          </label>
+          <Textarea
+            id="app-nice-skills"
+            className="mt-1 text-sm"
+            rows={2}
+            placeholder="Comma or line separated"
+            value={form.niceToHaveSkillsText}
+            onChange={(e) =>
+              setForm((f) => ({
+                ...f,
+                niceToHaveSkillsText: e.target.value,
+              }))
+            }
             disabled={saving || deleting}
           />
         </div>

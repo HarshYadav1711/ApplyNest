@@ -16,6 +16,8 @@ const jdLinkField = z
 
 const salaryRangeField = z.string().max(200).optional().default("");
 
+const skillsArray = z.array(z.string().max(150)).max(50).optional().default([]);
+
 export const createApplicationBodySchema = z.object({
   company: z.string().min(1).max(200).trim(),
   role: z.string().min(1).max(200).trim(),
@@ -24,6 +26,10 @@ export const createApplicationBodySchema = z.object({
   dateApplied: z.coerce.date(),
   status: statusEnum.optional(),
   salaryRange: salaryRangeField,
+  location: z.string().max(300).optional().default(""),
+  seniority: z.string().max(120).optional().default(""),
+  requiredSkills: skillsArray,
+  niceToHaveSkills: skillsArray,
 });
 
 export const updateApplicationBodySchema = z
@@ -42,6 +48,10 @@ export const updateApplicationBodySchema = z
     dateApplied: z.coerce.date().optional(),
     status: statusEnum.optional(),
     salaryRange: z.string().max(200).optional(),
+    location: z.string().max(300).optional(),
+    seniority: z.string().max(120).optional(),
+    requiredSkills: z.array(z.string().max(150)).max(50).optional(),
+    niceToHaveSkills: z.array(z.string().max(150)).max(50).optional(),
   })
   .strict();
 

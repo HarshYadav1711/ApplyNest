@@ -13,6 +13,10 @@ export interface ApplicationDocument extends mongoose.Document {
   dateApplied: Date;
   status: ApplicationStatus;
   salaryRange: string;
+  location: string;
+  seniority: string;
+  requiredSkills: string[];
+  niceToHaveSkills: string[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -37,6 +41,10 @@ const applicationSchema = new Schema<ApplicationDocument>(
       default: "Applied",
     },
     salaryRange: { type: String, default: "", trim: true },
+    location: { type: String, default: "", trim: true },
+    seniority: { type: String, default: "", trim: true },
+    requiredSkills: { type: [String], default: [] },
+    niceToHaveSkills: { type: [String], default: [] },
   },
   { timestamps: true }
 );

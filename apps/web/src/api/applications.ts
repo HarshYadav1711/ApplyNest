@@ -24,6 +24,10 @@ export interface ApplicationPayload {
   dateApplied: string;
   status: ApplicationStatus;
   salaryRange: string;
+  location: string;
+  seniority: string;
+  requiredSkills: string[];
+  niceToHaveSkills: string[];
 }
 
 export async function createApplication(

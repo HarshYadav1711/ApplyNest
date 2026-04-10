@@ -20,4 +20,7 @@ export const env = {
     60,
     Number(process.env.JWT_EXPIRES_SECONDS) || 604800
   ),
+  /** When unset, JD parsing uses a deterministic fallback (no paid API). */
+  openaiApiKey: process.env.OPENAI_API_KEY?.trim() || undefined,
+  openaiModel: process.env.OPENAI_MODEL ?? "gpt-4o-mini",
 };

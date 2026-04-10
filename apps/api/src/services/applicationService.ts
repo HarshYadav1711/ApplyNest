@@ -18,6 +18,10 @@ function toPublic(app: {
   dateApplied: Date;
   status: ApplicationStatus;
   salaryRange: string;
+  location?: string;
+  seniority?: string;
+  requiredSkills?: string[];
+  niceToHaveSkills?: string[];
   createdAt: Date;
   updatedAt: Date;
 }) {
@@ -30,6 +34,10 @@ function toPublic(app: {
     dateApplied: app.dateApplied.toISOString(),
     status: app.status,
     salaryRange: app.salaryRange,
+    location: app.location ?? "",
+    seniority: app.seniority ?? "",
+    requiredSkills: app.requiredSkills ?? [],
+    niceToHaveSkills: app.niceToHaveSkills ?? [],
     createdAt: app.createdAt.toISOString(),
     updatedAt: app.updatedAt.toISOString(),
   };
@@ -80,6 +88,10 @@ export async function createApplication(
     dateApplied: body.dateApplied,
     status: body.status ?? "Applied",
     salaryRange: body.salaryRange ?? "",
+    location: body.location ?? "",
+    seniority: body.seniority ?? "",
+    requiredSkills: body.requiredSkills ?? [],
+    niceToHaveSkills: body.niceToHaveSkills ?? [],
   });
   return toPublic(app);
 }

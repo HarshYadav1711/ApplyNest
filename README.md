@@ -39,7 +39,7 @@ Run **web** and **api** in two terminals for full-stack local dev.
 
 ## Environment
 
-See [.env.example](.env.example). Required for the API: `MONGODB_URI`, `JWT_SECRET`. Optional: `JWT_EXPIRES_SECONDS`, `CORS_ORIGIN`. The web app proxies `/api` to the API in dev; for production builds set `VITE_API_URL` when the API is on another origin.
+See [.env.example](.env.example). Required for the API: `MONGODB_URI`, `JWT_SECRET`. Optional: `JWT_EXPIRES_SECONDS`, `CORS_ORIGIN`, `OPENAI_API_KEY` / `OPENAI_MODEL` (JD parsing uses a local fallback when the key is absent). The web app proxies `/api` to the API in dev; for production builds set `VITE_API_URL` when the API is on another origin.
 
 ## Authentication
 
@@ -57,8 +57,9 @@ Each record belongs to the signed-in user: **company**, **role**, **JD link** (`
 | `POST` | `/api/applications` | Bearer |
 | `PATCH` | `/api/applications/:id` | Bearer |
 | `DELETE` | `/api/applications/:id` | Bearer |
+| `POST` | `/api/ai/parse-job` | Bearer — body `{ "text": "..." }`, response `{ "parsed": { company, role, requiredSkills, niceToHaveSkills, seniority, location } }` |
 
-**Web**: Home shows a **five-column Kanban** (Applied → Rejected); drag cards by the handle to update `status` (optimistic PATCH). **Add application** or a card opens the **modal** to create or edit; delete uses a confirm then `DELETE`.
+**Web**: Home shows a **five-column Kanban** (Applied → Rejected); drag cards by the handle to update `status` (optimistic PATCH). **Add application** or a card opens the **modal** to create or edit (including **Paste JD → Parse**). Delete uses a confirm then `DELETE`.
 
 ## Conventions (TBD)
 
