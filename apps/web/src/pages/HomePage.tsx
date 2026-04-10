@@ -17,6 +17,7 @@ import {
 import type { Application } from "../types/application";
 import type { ApplicationStatus } from "../constants/applicationStatus";
 import { getApiErrorMessage } from "../utils/apiError";
+import { downloadApplicationsCsv } from "../utils/exportToCsv";
 import { DemoJobSamples } from "../components/demo/DemoJobSamples";
 
 export function HomePage() {
@@ -91,6 +92,18 @@ export function HomePage() {
             <div className="flex flex-shrink-0 flex-wrap items-center gap-2.5">
               <Button type="button" variant="primary" onClick={openCreate}>
                 Add application
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={
+                  appsQuery.isLoading ||
+                  appsQuery.isError ||
+                  applications.length === 0
+                }
+                onClick={() => downloadApplicationsCsv(applications)}
+              >
+                Export CSV
               </Button>
               <Button type="button" variant="secondary" onClick={logout}>
                 Sign out
