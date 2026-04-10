@@ -1,58 +1,92 @@
 # ApplyNest
 
-**ApplyNest** is a full-stack job-application tracker: sign in, record roles you have applied for, and move them through a **five-stage pipeline** (Applied → Phone Screen → Interview → Offer → Rejected) on a Kanban board. You can paste a job description to **parse structured fields** (company, role, skills, seniority, location) and generate **tailored resume bullet ideas**—with sensible behavior when AI is not configured.
+## Overview
 
-This repository is a **npm workspaces monorepo** (`apps/web`, `apps/api`) intended to be easy to run locally and straightforward to deploy as two artifacts (static SPA + Node API).
+ApplyNest is a full-stack tool for tracking job applications: each role is a record with metadata, and you move it through a fixed five-stage pipeline on a Kanban board. Optional AI assists with parsing pasted job descriptions into structured fields and drafting resume bullet ideas; without an API key, the app still runs using deterministic parsers.
 
----
-
-## What’s in the box
-
-| Area | Behavior |
-|------|------------|
-| **Auth** | Email + password; JWT access tokens; bcrypt password hashing. |
-| **Applications** | Per-user CRUD with company, role, links, notes, dates, status, optional salary, location, seniority, and skill lists. |
-| **Pipeline** | Drag-and-drop Kanban with optimistic status updates. |
-| **AI (optional)** | Parse pasted JDs and suggest resume bullets; **deterministic fallbacks** when `OPENAI_API_KEY` is not set. |
+The codebase is an **npm workspaces** monorepo—**`apps/web`** (Vite + React) and **`apps/api`** (Express)—built to deploy as a static SPA plus a stateless Node API behind MongoDB.
 
 ---
 
-## Tech stack
+## Key features
 
-| Layer | Choice |
-|-------|--------|
-| **Web** | React 19, TypeScript, Vite, Tailwind CSS, React Query, React Router, dnd-kit |
-| **API** | Express, TypeScript, Mongoose, Zod, JWT, bcrypt, optional OpenAI SDK |
-| **Data** | MongoDB |
+- **Auth** — Email/password, bcrypt hashes, JWT access tokens, protected routes.
+- **Applications** — CRUD per user: company, role, JD link, notes, applied date, status, optional salary; location, seniority, required/nice-to-have skills.
+- **Pipeline** — Five columns (Applied → Rejected), drag-and-drop via dnd-kit, optimistic status updates.
+- **Search & filter** — Client-side search (company, role, location) and filter by stage.
+- **JD parsing** — Paste a posting; API returns structured JSON (validated with Zod). OpenAI when configured; **fallback parser** when not.
+- **Resume bullets** — Optional AI-generated suggestions (3–5 lines) tied to the JD and skills; **fallback** without `OPENAI_API_KEY`.
+- **Demo samples** — On the empty pipeline, three one-click sample JDs (clean, messy, edge-case) to exercise parsing without hunting real postings.
 
 ---
 
-## Repository layout
+## Screenshots
 
+Add assets under `docs/screenshots/` (or your preferred path) and link them here.
+
+| Placeholder | Suggested capture |
+|-------------|-------------------|
+| `pipeline.png` | Home: Kanban with cards across stages |
+| `modal-parse.png` | New application modal: JD paste + Parse |
+| `demo-samples.png` | Empty state: “Try with sample job descriptions” |
+
+```markdown
+<!-- Example once files exist:
+![Pipeline](docs/screenshots/pipeline.png)
+-->
 ```
-apps/web/     SPA — pages, Kanban UI, modals, shared UI primitives
-apps/api/     REST API — routes → controllers → services (business + AI logic here)
+
+---
+
+## Demo (local)
+
+1. Complete [Environment setup](#environment-setup) and start **`npm run dev:api`** and **`npm run dev:web`**.
+2. Open **http://localhost:5173**, register, sign in.
+3. With **no applications yet**, use **Try with sample job descriptions**: pick **Clean JD**, **Messy JD**, or **Edge-case JD** — the modal opens with that text in the paste field.
+4. Click **Parse** to run the parser (OpenAI if configured, otherwise fallback). Adjust fields, save, then drag the card between columns.
+
+To try AI features end-to-end, set **`OPENAI_API_KEY`** (and optionally **`OPENAI_MODEL`**) in `apps/api/.env` and restart the API.
+
+---
+
+## Testing
+
+**Automated (API)** — From the repo root:
+
+```bash
+npm run test
 ```
 
-**Design choices (short):**
+Vitest covers: JD parse fallback path, resume-bullet schema validation, and `POST /api/auth/register` (User persistence mocked; bcrypt + JWT still run). See `apps/api/tests/`.
 
-- **Thin route handlers** — HTTP concerns stay in controllers; **AI and domain logic live in `services/`** so behavior stays testable and swappable.
-- **Zod at the boundary** — request bodies and AI JSON outputs are validated before use.
-- **JWT in `localStorage`** — simple for a demo/product MVP; acceptable tradeoff documented below under *Out of scope*.
-- **Monorepo** — one install, shared conventions, independent deployables.
+**Manual / review**
 
----
-
-## Prerequisites
-
-- **Node.js 20+**
-- **MongoDB** reachable from the API (local instance, Docker, or hosted URI)
+- **Messy JD** — Informal copy, mixed casing, noisy punctuation; confirms parser and UI behave on ugly real-world posts.
+- **Edge-case JD** — Sparse, vague wording; checks empty-safe defaults and validation, not just happy-path listings.
+- **No API key** — Unset `OPENAI_API_KEY` and confirm fallbacks for parse and resume bullets.
+- **Pipeline** — Drag across columns, refresh, confirm status sticks; search/filter when you have enough cards.
 
 ---
 
-## Setup (local)
+## Architecture
 
-**1. Install dependencies**
+| Decision | Rationale |
+|----------|-----------|
+| **Controllers vs services** | Routes stay thin; **business and AI logic live in `services/`** (e.g. `services/ai/`) so it stays testable and replaceable. |
+| **Zod** | Request bodies and AI JSON outputs are validated before use; bad model output does not leak raw to clients. |
+| **JWT in `localStorage`** | Straightforward for an MVP; no refresh-token flow (see [Future improvements](#future-improvements)). |
+| **Monorepo** | Single install, shared TypeScript conventions; web and API version and ship independently. |
+| **AI fallbacks** | JD parsing and resume bullets work without paid API calls so local dev and demos do not depend on keys. |
+
+**Stack** — React 19, Vite, Tailwind, React Query, React Router, dnd-kit · Express, Mongoose, Zod, JWT, bcrypt, optional OpenAI SDK · MongoDB.
+
+---
+
+## Environment setup
+
+**Prerequisites:** Node.js **20+**, and a **MongoDB** instance the API can reach (local, Docker, or hosted).
+
+**1. Install**
 
 ```bash
 git clone <repository-url>
@@ -60,17 +94,24 @@ cd ApplyNest
 npm install
 ```
 
-**2. Configure the API**
+**2. API env**
 
 ```bash
 cp .env.example apps/api/.env
 ```
 
-Edit `apps/api/.env`: set **`MONGODB_URI`** and **`JWT_SECRET`** to real values for your machine. See [Environment variables](#environment-variables) for the full list.
+Edit **`apps/api/.env`**. Required:
 
-**3. Run the stack**
+| Variable | Role |
+|----------|------|
+| **`MONGODB_URI`** | Connection string |
+| **`JWT_SECRET`** | Signing key for access tokens — use a long random value in production |
 
-Use **two terminals**:
+Optional: `PORT`, `NODE_ENV`, `CORS_ORIGIN`, `JWT_EXPIRES_SECONDS`, `OPENAI_API_KEY`, `OPENAI_MODEL`. Full template and comments: **[`.env.example`](.env.example)**.
+
+**3. Run**
+
+Two terminals:
 
 ```bash
 npm run dev:api
@@ -80,10 +121,10 @@ npm run dev:api
 npm run dev:web
 ```
 
-- **Web:** [http://localhost:5173](http://localhost:5173) — Vite dev server proxies `/api` to the API.
-- **API:** [http://localhost:4000](http://localhost:4000) — health check: `GET /api/health`
+- **App:** http://localhost:5173 — Vite proxies `/api` to the API.
+- **Health:** http://localhost:4000/api/health
 
-Register an account in the UI, then use the pipeline.
+**Web (production builds only)** — If the SPA and API are on different origins, set **`VITE_API_URL`** in `apps/web/.env` to the public API base (no trailing slash). Omit in local dev.
 
 ---
 
@@ -91,95 +132,42 @@ Register an account in the UI, then use the pipeline.
 
 | Command | Purpose |
 |---------|---------|
-| `npm run dev:web` | Vite dev server (`apps/web`) |
-| `npm run dev:api` | API with watch (`apps/api`) |
-| `npm run build` | Production build: web → API compile |
-| `npm run typecheck` | Typecheck all workspaces |
+| `npm run dev:web` / `npm run dev:api` | Dev servers |
+| `npm run build` | Production build: web then API `tsc` |
+| `npm run typecheck` | Typecheck workspaces |
 | `npm run lint` | ESLint (web) |
-| `npm run test` | Vitest — API smoke tests (`apps/api/tests`) |
+| `npm run test` | API Vitest suite |
 
 ---
 
-## Testing (API)
+## API (quick reference)
 
-Tests are intentionally small: **Vitest** + **supertest**, three focused cases (JD parse fallback, resume-bullet Zod schema, register route). Run from the repo root:
-
-```bash
-npm run test
-```
-
-The register test **mocks the `User` model** only (no in-memory Mongo download); hashing and JWT signing still execute. Other tests avoid network and DB.
-
----
-
-## Environment variables
-
-All variables are documented in **[`.env.example`](.env.example)**. Summary:
-
-### API (`apps/api/.env`)
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `MONGODB_URI` | **Yes** | MongoDB connection string |
-| `JWT_SECRET` | **Yes** | Secret used to sign JWTs (use a long random value in production) |
-| `PORT` | No | Listen port (default `4000`) |
-| `NODE_ENV` | No | `development` / `production` |
-| `CORS_ORIGIN` | No | Allowed browser origin (default `http://localhost:5173`) |
-| `JWT_EXPIRES_SECONDS` | No | Access token TTL in seconds (default `604800`) |
-| `OPENAI_API_KEY` | No | Enables OpenAI-backed JD parsing and resume bullets; omitted → local fallbacks |
-| `OPENAI_MODEL` | No | Model when API key is set (default `gpt-4o-mini`) |
-
-### Web (`apps/web/.env` — production only)
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `VITE_API_URL` | No | Public API base URL when the SPA and API are on **different origins**. Leave unset in dev (proxy handles `/api`). |
-
----
-
-## Production build (overview)
-
-1. Set `VITE_API_URL` for the web build if the API is not same-origin.
-2. Run `npm run build` — outputs `apps/web/dist` and `apps/api/dist`.
-3. Serve the SPA as static files and run `node apps/api/dist/server.js` (or your process manager) with production `apps/api/.env`.
-
-CORS must allow your deployed web origin (`CORS_ORIGIN`).
-
----
-
-## API overview
-
-| Area | Notes |
-|------|--------|
+| Area | Endpoints |
+|------|-----------|
 | Health | `GET /api/health` |
 | Auth | `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/auth/me` (Bearer) |
 | Applications | `GET/POST /api/applications`, `GET/PATCH/DELETE /api/applications/:id` (Bearer) |
-| AI | `POST /api/ai/parse-job`, `POST /api/ai/resume-bullets` (Bearer) — structured JSON, validated server-side |
+| AI | `POST /api/ai/parse-job`, `POST /api/ai/resume-bullets` (Bearer) |
 
-Details and shapes are defined in route validators and `apps/api/src/services/ai/schemas.ts`.
+Request/response shapes live in route validators and `apps/api/src/services/ai/schemas.ts`.
+
+**Production deploy (outline):** Build with `npm run build` (`apps/web/dist`, `apps/api/dist`). Serve static files; run `node apps/api/dist/server.js` with production env. Set `CORS_ORIGIN` to your web origin; set `VITE_API_URL` when building the SPA if API is on another host.
 
 ---
 
 ## Security & secrets
 
-- **No application secrets belong in git.** This repo should only contain **`.env.example`** (placeholders), not real `.env` files.
-- **`.gitignore`** excludes `.env` and common local variants.
-- Before sharing or open-sourcing, run your own scan (e.g. search for API keys, connection strings, and private URLs). The template uses obvious placeholders such as `replace-with-a-long-random-string-at-least-32-characters` for `JWT_SECRET`.
+Do not commit real `.env` files. This repo ships **`.env.example`** only. `.gitignore` excludes env files; verify with your own secret scan before publishing.
 
 ---
 
-## Intentionally out of scope (for now)
+## Future improvements
 
-These are deliberate boundaries for a focused MVP—not omissions by accident:
-
-- **Social / SSO login** (Google, GitHub, etc.)
-- **Email verification**, password reset, or magic links
-- **Refresh tokens** / token rotation (short-lived access JWTs only)
-- **Rate limiting**, CAPTCHA, and abuse monitoring on auth and AI routes
-- **Broader automated coverage** (e2e, more services) beyond the minimal Vitest baseline
-- **Multi-tenant admin**, analytics, or billing
-- **Mobile apps** / offline support
-- **Hosted AI** beyond optional OpenAI — fallbacks exist specifically to keep local dev simple
+- Refresh tokens or short-lived access + rotation for production auth.
+- Rate limits and abuse controls on auth and AI routes.
+- E2E tests (Playwright or similar) for the critical path: login → create application → drag Kanban.
+- Email verification and password reset.
+- Observability: structured logs, metrics, tracing for API deploys.
 
 ---
 
