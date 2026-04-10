@@ -10,7 +10,8 @@
     "dev:api": "npm run dev -w @applynest/api",
     "build": "npm run build -w @applynest/web && npm run build -w @applynest/api",
     "typecheck": "npm run typecheck -w @applynest/web --if-present && npm run typecheck -w @applynest/api --if-present",
-    "lint": "npm run lint -w @applynest/web --if-present"
+    "lint": "npm run lint -w @applynest/web --if-present",
+    "test": "npm run test -w @applynest/api"
   },
   "engines": {
     "node": ">=20"

@@ -96,6 +96,19 @@ Register an account in the UI, then use the pipeline.
 | `npm run build` | Production build: web → API compile |
 | `npm run typecheck` | Typecheck all workspaces |
 | `npm run lint` | ESLint (web) |
+| `npm run test` | Vitest — API smoke tests (`apps/api/tests`) |
+
+---
+
+## Testing (API)
+
+Tests are intentionally small: **Vitest** + **supertest**, three focused cases (JD parse fallback, resume-bullet Zod schema, register route). Run from the repo root:
+
+```bash
+npm run test
+```
+
+The register test **mocks the `User` model** only (no in-memory Mongo download); hashing and JWT signing still execute. Other tests avoid network and DB.
 
 ---
 
@@ -163,7 +176,7 @@ These are deliberate boundaries for a focused MVP—not omissions by accident:
 - **Email verification**, password reset, or magic links
 - **Refresh tokens** / token rotation (short-lived access JWTs only)
 - **Rate limiting**, CAPTCHA, and abuse monitoring on auth and AI routes
-- **Automated test suite** (unit/e2e) — recommended next step before large refactors
+- **Broader automated coverage** (e2e, more services) beyond the minimal Vitest baseline
 - **Multi-tenant admin**, analytics, or billing
 - **Mobile apps** / offline support
 - **Hosted AI** beyond optional OpenAI — fallbacks exist specifically to keep local dev simple
