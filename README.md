@@ -39,11 +39,16 @@ Run **web** and **api** in two terminals for full-stack local dev.
 
 ## Environment
 
-See [.env.example](.env.example). API reads `PORT`, `CORS_ORIGIN`, etc. Client dev proxy forwards `/api` to the API; for production builds set `VITE_API_URL` if the API is on another origin.
+See [.env.example](.env.example). Required for the API: `MONGODB_URI`, `JWT_SECRET`. Optional: `JWT_EXPIRES_SECONDS`, `CORS_ORIGIN`. The web app proxies `/api` to the API in dev; for production builds set `VITE_API_URL` when the API is on another origin.
+
+## Authentication
+
+- **API**: `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/auth/me` (Bearer JWT). Passwords hashed with bcrypt; tokens signed with `JWT_SECRET`.
+- **Web**: JWT in `localStorage`, `AuthProvider` + `useAuth()` bootstrap session via `/me` after refresh. `ProtectedRoute` guards `/`. Logout clears token and query cache.
 
 ## Conventions (TBD)
 
-_Document API versioning, auth, and deployment targets here as the project grows._
+_Document API versioning and deployment targets here as the project grows._
 
 ## License
 
