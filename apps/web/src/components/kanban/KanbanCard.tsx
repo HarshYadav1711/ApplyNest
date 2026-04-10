@@ -1,7 +1,11 @@
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
+import { useCallback, useLayoutEffect, useRef } from "react";
 import type { Application } from "../../types/application";
+import { cn } from "../../utils/cn";
 import { formatAppliedDate } from "../../utils/dateFormat";
+
+const KANBAN_DND_VAR = "--kanban-dnd-transform";
 
 export function KanbanCard({
   application,
@@ -16,17 +20,38 @@ export function KanbanCard({
       data: { application },
     });
 
-  const style = transform
-    ? {
-        transform: CSS.Translate.toString(transform),
+  const rootRef = useRef<HTMLDivElement | null>(null);
+
+  const setRefs = useCallback(
+    (node: HTMLDivElement | null) => {
+      rootRef.current = node;
+      setNodeRef(node);
+    },
+    [setNodeRef]
+  );
+
+  useLayoutEffect(() => {
+    const el = rootRef.current;
+    if (!el) return;
+    if (transform) {
+      const matrix = CSS.Transform.toString(transform);
+      if (matrix) {
+        el.style.setProperty(KANBAN_DND_VAR, matrix);
+      } else {
+        el.style.removeProperty(KANBAN_DND_VAR);
       }
-    : undefined;
+    } else {
+      el.style.removeProperty(KANBAN_DND_VAR);
+    }
+  }, [transform]);
 
   return (
     <div
-      ref={setNodeRef}
-      style={style}
-      className={`touch-none ${isDragging ? "opacity-60" : ""}`}
+      ref={setRefs}
+      className={cn(
+        "kanban-draggable-root touch-none",
+        isDragging && "opacity-60"
+      )}
     >
       <div className="flex gap-2 rounded-lg border border-slate-200 bg-white p-2.5 shadow-sm ring-1 ring-slate-900/5">
         <button

@@ -19,6 +19,11 @@ body {
   min-height: 100vh;
 }
 
+/* dnd-kit: transform lives in CSS; runtime values come from --kanban-dnd-transform */
+.kanban-draggable-root {
+  transform: var(--kanban-dnd-transform, none);
+}
+
 ::selection {
   background-color: rgb(226 232 240);
   color: rgb(15 23 42);
