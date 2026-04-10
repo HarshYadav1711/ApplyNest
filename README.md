@@ -6,6 +6,8 @@ ApplyNest is a full-stack tool for tracking job applications: each role is a rec
 
 The codebase is an **npm workspaces** monorepo—**`apps/web`** (Vite + React) and **`apps/api`** (Express)—built to deploy as a static SPA plus a stateless Node API behind MongoDB.
 
+**Live** — [https://apply-nest-web.vercel.app/login](https://apply-nest-web.vercel.app/login) · [https://applynest-k4yp.onrender.com/](https://applynest-k4yp.onrender.com/)
+
 ---
 
 ## Key features
