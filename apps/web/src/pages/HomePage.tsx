@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { ApplicationModal } from "../components/ApplicationModal";
 import { KanbanBoard } from "../components/kanban/KanbanBoard";
@@ -19,6 +19,8 @@ import type { ApplicationStatus } from "../constants/applicationStatus";
 import { getApiErrorMessage } from "../utils/apiError";
 import { downloadApplicationsCsv } from "../utils/exportToCsv";
 import { DemoJobSamples } from "../components/demo/DemoJobSamples";
+import { ApplicationStatsRow } from "../components/ApplicationStatsRow";
+import { getApplicationStats } from "../utils/getApplicationStats";
 
 export function HomePage() {
   const { user, logout, isAuthenticated } = useAuth();
@@ -34,6 +36,10 @@ export function HomePage() {
   const [boardSearch, setBoardSearch] = useState("");
 
   const applications = appsQuery.data ?? [];
+  const stats = useMemo(
+    () => getApplicationStats(appsQuery.data ?? []),
+    [appsQuery.data],
+  );
 
   const { filteredApplications, debouncedSearch } = useFilteredApplications(
     applications,
@@ -156,6 +162,8 @@ export function HomePage() {
                 Matches company and role; updates shortly after you stop typing.
               </p>
             </div>
+
+            <ApplicationStatsRow stats={stats} />
 
             {hasNoSearchMatches ? (
               <div
